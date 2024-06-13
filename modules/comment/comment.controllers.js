@@ -60,13 +60,17 @@ export const getCommentById = async (req, res) => {
 // Update a comment
 export const updateComment = async (req, res) => {
   const { id } = req.params;
-  const { content } = req.body;
+  const { content, userId } = req.body;
   try {
     const comment = await Comment.findByPk(id);
-    if (!comment || comment.userId !== req.user.id) {
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    // Check if the authenticated user is the author of the comment
+    if (comment.userId !== userId) {
       return res
-        .status(404)
-        .json({ message: "Comment not found or unauthorized" });
+        .status(403)
+        .json({ error: "You are not authorized to edit this comment" });
     }
     comment.content = content;
     await comment.save();
@@ -79,15 +83,22 @@ export const updateComment = async (req, res) => {
 // Delete a comment
 export const deleteComment = async (req, res) => {
   const { id } = req.params;
+  const { userId } = req.body;
+
   try {
     const comment = await Comment.findByPk(id);
-    if (!comment || comment.userId !== req.user.id) {
-      return res
-        .status(404)
-        .json({ message: "Comment not found or unauthorized" });
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
     }
-    await comment.destroy();
-    res.status(204).json({ message: "Comment deleted" });
+    // Check if the authenticated user is the author of the comment
+    if (comment.userId !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this comment" });
+    }
+    // Soft delete the comment by setting deletedAt
+    await comment.destroy({ force: false }); // force: false triggers soft delete
+    res.json({ message: "Post soft deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

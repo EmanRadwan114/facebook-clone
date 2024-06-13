@@ -45,14 +45,20 @@ export const getPostById = async (req, res) => {
 // Update a post
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, authorId } = req.body;
+
   try {
     const post = await Post.findByPk(id);
-    if (!post || post.authorId !== req.user.id) {
-      return res
-        .status(404)
-        .json({ message: "Post not found or unauthorized" });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+    // Check if the authenticated user is the author of the post
+    if (post.authorId !== authorId) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to edit this post" });
+    }
+
     post.title = title;
     post.content = content;
     await post.save();
@@ -65,13 +71,22 @@ export const updatePost = async (req, res) => {
 // Delete a post (soft delete)
 export const deletePost = async (req, res) => {
   const { id } = req.params;
+  const { authorId } = req.body;
+
   try {
     const post = await Post.findByPk(id);
-    if (!post || post.authorId !== req.user.id) {
-      return res.status(404).json({ error: "Post not found or unauthorized" });
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
     }
-    await post.destroy();
-    res.status(204).json({ message: "Post deleted" });
+    // Check if the authenticated user is the author of the post
+    if (post.authorId !== authorId) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this post" });
+    }
+    // Soft delete the post by setting deletedAt
+    await post.destroy({ force: false }); // force: false triggers soft delete
+    res.json({ message: "Post soft deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
