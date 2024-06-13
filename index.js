@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { initModels } from "./models/index.js";
+import { initModels } from "./database/models.js";
 import userRouter from "./modules/user/user.routes.js";
 import postRouter from "./modules/post/post.routes.js";
 import commentRouter from "./modules/comment/comment.routes.js";

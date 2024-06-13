@@ -1,4 +1,4 @@
-import { User } from "../../database/models";
+import { User } from "../../database/models.js";
 
 export const checkEmailExists = async (req, res, next) => {
   const { email } = req.body;
