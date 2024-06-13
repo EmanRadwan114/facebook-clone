@@ -2,29 +2,22 @@ import { Post, User } from "../../database/models.js";
 
 // Create a post
 export const createPost = async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, authorId } = req.body;
   try {
-    const post = await Post.create({ title, content, authorId: req.user.id });
+    const post = await Post.create({ title, content, authorId });
     res.status(201).json(post);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
 // Get all posts
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.findAll({
-      include: [
-        {
-          model: User,
-          attributes: ["username"],
-        },
-      ],
-    });
-    res.status(200).json(posts);
+    const posts = await Post.findAll();
+    res.json(posts);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

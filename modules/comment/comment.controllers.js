@@ -2,16 +2,12 @@ import { Comment, Post, User } from "../../database/models.js";
 
 // Create a comment
 export const createComment = async (req, res) => {
-  const { content, postId } = req.body;
+  const { content, postId, userId } = req.body;
   try {
-    const comment = await Comment.create({
-      content,
-      postId,
-      userId: req.user.id,
-    });
+    const comment = await Comment.create({ content, postId, userId });
     res.status(201).json(comment);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
