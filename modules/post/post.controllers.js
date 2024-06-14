@@ -1,4 +1,4 @@
-import { Post, User } from "../../database/models.js";
+import { Post, User, Comment } from "../../database/models.js";
 
 // Create a post
 export const createPost = async (req, res) => {
@@ -97,6 +97,7 @@ export const getUserWithPostAndComments = async (req, res) => {
   const { userId, postId } = req.params;
   try {
     const user = await User.findByPk(userId, {
+      attributes: { exclude: ["password", "email"] },
       include: [
         {
           model: Post,
